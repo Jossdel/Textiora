@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+
+  messages      Message[]
+  conversations ConversationUser[]
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  content        String
+  senderId       String
+  conversationId String
+  createdAt      DateTime @default(now())  
+
+  sender       User         @relation(fields: [senderId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+}
+
+model FriendRequest {
+  id         String   @id @default(uuid())
+  senderId   String
+  receiverId Stringr
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+}
+
+model Friendship {
+  id        String   @id @default(uuid())
+  user1Id   String
+  user2Id   String
+  createdAt DateTime @default(now())
+}
+
+model Conversation {
+  id           String             @id @default(uuid())
+  participants ConversationUser[]
+  messages     Message[]
+}
+
+model ConversationUser {
+  id             String @id @default(uuid())
+  userId         String
+  conversationId String
+
+  user         User         @relation(fields: [userId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+}
